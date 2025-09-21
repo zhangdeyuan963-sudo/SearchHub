@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS 代码保持不变，已经非常完善 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e45e2, #88d3ce);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.07);
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #6e45e2, #88d3ce);
+            border-radius: 24px 24px 0 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 10px;
+        }
+        
+        .header h1 {
+            font-size: 2.4rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #1d1d1f;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            color: #86868b;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .search-box-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            z-index: 30;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        .search-box-container:focus-within {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+        
+        .group-selector {
+            display: flex;
+            align-items: center;
+            margin-right: 12px;
+            position: relative;
+        }
+        
+        .group-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #6e45e2;
+            box-shadow: 0 2px 8px rgba(110, 69, 226, 0.15);
+            position: relative;
+            z-index: 35;
+        }
+        
+        .group-toggle:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(110, 69, 226, 0.25);
+        }
+        
+        .group-toggle:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(110, 69, 226, 0.2);
+        }
+        
+        .group-toggle i {
+            font-size: 1.4rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .group-toggle:hover i {
+            transform: scale(1.1);
+        }
+        
+        .current-group {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            transform: translateY(-8px);
+            z-index: 40;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            color: #6e45e2;
+            font-weight: 500;
+        }
+        
+        .group-toggle:hover + .current-group {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .group-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            width: 220px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            z-index: 1000;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transform-origin: top left;
+            animation: fadeInScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        
+        .group-dropdown.show {
+            display: block;
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .group-item {
+            padding: 14px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .group-item:hover {
+            background: rgba(110, 69, 226, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .group-item.active {
+            background: rgba(110, 69, 226, 0.12);
+            color: #6e45e2;
+        }
+        
+        .group-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .group-item:hover .group-color {
+            transform: scale(1.2);
+        }
+        
+        .search-box {
+            display: flex;
+            flex: 1;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 16px 18px;
+            font-size: 1.1rem;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: #1d1d1f;
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .search-input::placeholder {
+            color: #86868b;
+            transition: opacity 0.3s ease;
+        }
+        
+        .search-input:focus::placeholder {
+            opacity: 0.5;
+        }
+        
+        .search-button {
+            padding: 16px;
+            background: linear-gradient(135deg, #6e45e2, #88d3ce);
+            color: white;
+            border: none;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 14px;
+            margin-left: 10px;
+            width: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(110, 69, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.7s ease;
+            z-index: 1;
+        }
+        
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(110, 69, 226, 0.4);
+        }
+        
+        .search-button:hover::before {
+            left: 100%;
+        }
+        
+        .search-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(110, 69, 226, 0.3);
+        }
+        
+        .engines-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 18px;
+            margin-top: 30px;
+        }
+        
+        .engine {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+        }
+        
+        .engine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6e45e2, #88d3ce);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .engine:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.9);
+        }
+        
+        .engine:hover::before {
+            opacity: 1;
+        }
+        
+        .engine-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            font-size: 1.6rem;
+            color: #6e45e2;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .engine-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.8) 50%, transparent 60%);
+            transition: transform 0.6s ease;
+            transform: translateX(-100%);
+        }
+        
+        .engine:hover .engine-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .engine:hover .engine-icon::after {
+            transform: translateX(100%);
+        }
+        
+        .engine-name {
+            font-size: 0.95rem;
+            text-align: center;
+            color: #1d1d1f;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .engine:hover .engine-name {
+            color: #6e45e2;
+        }
+        
+        .config-panel {
+            margin-top: 40px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .config-panel:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.9);
+        }
+        
+        .config-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6e45e2, #88d3ce);
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .config-header h3 {
+            font-size: 1.3rem;
+            color: #1d1d1f;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        
+        .toggle-config {
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            color: #6e45e2;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 10px 18px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toggle-config:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .config-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .config-content.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .config-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .config-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.6);
+            color: #1d1d1f;
+            font-size: 1rem;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .config-input:focus {
+            outline: none;
+            border-color: #6e45e2;
+            box-shadow: 0 0 0 2px rgba(110, 69, 226, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .config-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .config-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .config-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.7s ease;
+        }
+        
+        .config-btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6e45e2, #88d3ce);
+            color: white;
+            box-shadow: 0 4px 12px rgba(110, 69, 226, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(110, 69, 226, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(110, 69, 226, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.7);
+            color: #6e45e2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* 分组列表样式 - 统一大小 */
+        .groups-container {
+            margin-bottom: 20px;
+        }
+        
+        .group-list-item, .new-group-form {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        
+        .group-list-header, .new-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .group-list-header:hover, .new-group-header:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .group-list-title, .new-group-title {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: #1d1d1f;
+        }
+        
+        .group-list-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .group-list-header:hover .group-list-color {
+            transform: scale(1.2);
+        }
+        
+        .group-list-engines {
+            font-size: 0.9rem;
+            color: #86868b;
+            margin-left: 10px;
+        }
+        
+        .group-list-actions, .new-group-action {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .group-list-action-btn, .new-group-action-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #6e45e2;
+        }
+        
+        .group-list-action-btn:hover, .new-group-action-btn:hover {
+            background: rgba(110, 69, 226, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .group-list-content, .new-group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .group-list-content.expanded, .new-group-content.expanded {
+            max-height: 500px;
+        }
+        
+        .group-list-form, .new-group-form-content {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #86868b;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-input, .search-button {
+                padding: 14px;
+                font-size: 1rem;
+            }
+            
+            .engines-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .group-toggle {
+                width: 48px;
+            }
+            
+            .group-dropdown {
+                width: 200px;
+            }
+            
+            .search-box-container {
+                flex-direction: column;
+            }
+            
+            .group-selector {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .group-toggle {
+                width: 100%;
+                padding: 10px;
+                justify-content: flex-start;
+                border-radius: 14px;
+            }
+            
+            .group-toggle i {
+                margin-right: 10px;
+            }
+            
+            .search-box {
+                flex-direction: row;
+            }
+            
+            .search-input {
+                border-radius: 14px;
+            }
+            
+            .search-button {
+                border-radius: 14px;
+                width: 50px;
+            }
+            
+            .engine {
+                padding: 15px;
+            }
+            
+            .engine-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .config-actions {
+                flex-direction: column;
+            }
+            
+            .config-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SearchHub</h1>
+            <p>一次输入-多自定义引擎-同步搜索</p>
+        </div>
+        
+        <div class="search-box-container">
+            <div class="group-selector">
+                <div class="group-toggle" id="groupToggle">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="current-group" id="currentGroupHint">通用搜索</div>
+                <div class="group-dropdown" id="groupDropdown">
+                    <!-- 分组选项将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="searchKeyword" class="search-input" placeholder="请输入关键词...">
+                <button class="search-button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="engines-container" id="enginesContainer">
+            <!-- 搜索引擎将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="config-panel">
+            <div class="config-header">
+                <h3>搜索引擎配置</h3>
+                <button class="toggle-config" id="toggleConfigBtn">
+                    <i class="fas fa-cog"></i> 配置
+                </button>
+            </div>
+            
+            <div class="config-content" id="configContent">
+                <div class="new-group-form">
+                    <div class="new-group-header" id="newGroupHeader">
+                        <div class="new-group-title">新建分组</div>
+                        <div class="new-group-action">
+                            <button class="new-group-action-btn" id="newGroupToggle">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="new-group-content" id="newGroupContent">
+                        <div class="new-group-form-content">
+                            <div class="config-group">
+                                <label for="newGroupName">新分组名称</label>
+                                <input type="text" id="newGroupName" class="config-input" placeholder="例如: 学术搜索">
+                            </div>
+                            
+                            <div class="config-group">
+                                <label for="groupColor">分组颜色</label>
+                                <input type="color" id="groupColor" class="config-input" value="#6e45e2">
+                            </div>
+                            
+                            <div class="config-actions">
+                                <button class="config-btn btn-secondary" id="resetGroupConfigBtn">重置</button>
+                                <button class="config-btn btn-primary" id="addGroupBtn">添加新分组</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="groups-container" id="groupsContainer">
+                    <!-- 分组列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 SearchHub1.0| 使用 {keyword} 作为关键词占位符| 簡單制作</p>
+        </div>
+    </div>
+
+    <script>
+        // 搜索引擎配置数据
+        let searchGroups = {
+            "通用搜索": {
+                color: "#6e45e2",
+                engines: [
+                    { name: "百度", url: "https://www.baidu.com/s?wd={keyword}", icon: "fab fa-baidu", color: "#2932e1" },
+                    { name: "Google", url: "https://www.google.com/search?q={keyword}", icon: "fab fa-google", color: "#34a853" },
+                    { name: "Bing", url: "https://www.bing.com/search?q={keyword}", icon: "fab fa-microsoft", color: "#0078d4" },
+                    { name: "DuckDuckGo", url: "https://duckduckgo.com/?q={keyword}", icon: "fas fa-duck", color: "#de5833" }
+                ]
+            },
+            "代码搜索": {
+                color: "#88d3ce",
+                engines: [
+                    { name: "GitHub", url: "https://github.com/search?q={keyword}", icon: "fab fa-github", color: "#333333" },
+                    { name: "StackOverflow", url: "https://stackoverflow.com/search?q={keyword}", icon: "fab fa-stack-overflow", color: "#f48024" },
+                    { name: "MDN", url: "https://developer.mozilla.org/search?q={keyword}", icon: "fab fa-mdn", color: "#83d0f2" }
+                ]
+            },
+            "学术搜索": {
+                color: "#ff7d47",
+                engines: [
+                    { name: "Google Scholar", url: "https://scholar.google.com/scholar?q={keyword}", icon: "fas fa-graduation-cap", color: "#4285f4" },
+                    { name: "CNKI", url: "https://cnki.net/search?q={keyword}", icon: "fas fa-book", color: "#c1352d" }
+                ]
+            },
+            "媒体搜索": {
+                color: "#9c56b8",
+                engines: [
+                    { name: "YouTube", url: "https://www.youtube.com/results?search_query={keyword}", icon: "fab fa-youtube", color: "#ff0000" },
+                    { name: "Bilibili", url: "https://search.bilibili.com/all?keyword={keyword}", icon: "fas fa-play-circle", color: "#fb7299" }
+                ]
+            }
+        };
+
+        // DOM元素缓存
+        const domElements = {
+            groupToggle: document.getElementById('groupToggle'),
+            currentGroupHint: document.getElementById('currentGroupHint'),
+            groupDropdown: document.getElementById('groupDropdown'),
+            searchKeyword: document.getElementById('searchKeyword'),
+            searchButton: document.getElementById('searchButton'),
+            enginesContainer: document.getElementById('enginesContainer'),
+            toggleConfigBtn: document.getElementById('toggleConfigBtn'),
+            configContent: document.getElementById('configContent'),
+            resetGroupConfigBtn: document.getElementById('resetGroupConfigBtn'),
+            addGroupBtn: document.getElementById('addGroupBtn'),
+            newGroupToggle: document.getElementById('newGroupToggle'),
+            newGroupHeader: document.getElementById('newGroupHeader'),
+            newGroupContent: document.getElementById('newGroupContent'),
+            newGroupName: document.getElementById('newGroupName'),
+            groupColor: document.getElementById('groupColor'),
+            groupsContainer: document.getElementById('groupsContainer')
+        };
+
+        let currentGroup = "通用搜索";
+        let dropdownTimeout = null;
+        let configTimeout = null;
+        let expandedGroup = null;
+        let newGroupExpanded = false;
+        let groupTimeouts = {}; // 存储每个分组的超时ID
+        const LONG_PRESS_DURATION = 1000; // 长按时间阈值
+
+        // 初始化函数
+        function init() {
+            renderGroupDropdown();
+            loadFromLocalStorage();
+            switchGroup(currentGroup);
+            renderGroupsList();
+            setupEventListeners();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 事件监听器
+            domElements.groupToggle.addEventListener('click', toggleGroupDropdown);
+            domElements.toggleConfigBtn.addEventListener('click', toggleConfigPanel);
+            domElements.searchButton.addEventListener('click', multiSearch);
+            domElements.searchKeyword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') multiSearch();
+            });
+            
+            // 配置按钮事件
+            domElements.resetGroupConfigBtn.addEventListener('click', resetGroupConfig);
+            domElements.addGroupBtn.addEventListener('click', addNewGroup);
+            domElements.newGroupToggle.addEventListener('click', toggleNewGroup);
+            domElements.newGroupHeader.addEventListener('click', toggleNewGroup);
+            
+            // 鼠标离开事件
+            domElements.groupDropdown.addEventListener('mouseleave', function() {
+                dropdownTimeout = setTimeout(() => this.classList.remove('show'), 300);
+            });
+            
+            domElements.groupDropdown.addEventListener('mouseenter', function() {
+                clearTimeout(dropdownTimeout);
+            });
+            
+            domElements.configContent.addEventListener('mouseleave', function() {
+                configTimeout = setTimeout(() => this.classList.remove('show'), 300);
+            });
+            
+            domElements.configContent.addEventListener('mouseenter', function() {
+                clearTimeout(configTimeout);
+            });
+            
+            // 点击页面其他地方关闭所有下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.group-selector')) {
+                    domElements.groupDropdown.classList.remove('show');
+                }
+                
+                if (!e.target.closest('.config-panel') && !e.target.matches('.toggle-config')) {
+                    domElements.configContent.classList.remove('show');
+                }
+            });
+        }
+
+        // 切换分组下拉菜单
+        function toggleGroupDropdown(e) {
+            e.stopPropagation();
+            domElements.groupDropdown.classList.toggle('show');
+        }
+
+        // 切换配置面板
+        function toggleConfigPanel(e) {
+            e.stopPropagation();
+            domElements.configContent.classList.toggle('show');
+            domElements.groupDropdown.classList.remove('show');
+        }
+
+        // 切换新建分组表单
+        function toggleNewGroup(e) {
+            e.stopPropagation();
+            
+            if (newGroupExpanded) {
+                domElements.newGroupContent.classList.remove('expanded');
+                domElements.newGroupToggle.innerHTML = '<i class="fas fa-plus"></i>';
+            } else {
+                domElements.newGroupContent.classList.add('expanded');
+                domElements.newGroupToggle.innerHTML = '<i class="fas fa-minus"></i>';
+                
+                // 折叠所有已展开的分组
+                if (expandedGroup) {
+                    const expandedContent = document.getElementById(`groupContent-${expandedGroup}`);
+                    const expandedToggle = document.getElementById(`groupToggle-${expandedGroup}`);
+                    if (expandedContent && expandedToggle) {
+                        expandedContent.classList.remove('expanded');
+                        expandedToggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                    }
+                    expandedGroup = null;
+                }
+            }
+            
+            newGroupExpanded = !newGroupExpanded;
+        }
+
+        // 切换分组展开状态
+        function toggleGroup(groupName) {
+            const content = document.getElementById(`groupContent-${groupName}`);
+            const toggleBtn = document.getElementById(`groupToggle-${groupName}`);
+            
+            if (expandedGroup === groupName) {
+                // 折叠当前分组
+                content.classList.remove('expanded');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                expandedGroup = null;
+                
+                // 清除超时
+                if (groupTimeouts[groupName]) {
+                    clearTimeout(groupTimeouts[groupName]);
+                    delete groupTimeouts[groupName];
+                }
+            } else {
+                // 折叠之前展开的分组
+                if (expandedGroup) {
+                    const prevContent = document.getElementById(`groupContent-${expandedGroup}`);
+                    const prevToggle = document.getElementById(`groupToggle-${expandedGroup}`);
+                    if (prevContent && prevToggle) {
+                        prevContent.classList.remove('expanded');
+                        prevToggle.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                        
+                        // 清除超时
+                        if (groupTimeouts[expandedGroup]) {
+                            clearTimeout(groupTimeouts[expandedGroup]);
+                            delete groupTimeouts[expandedGroup];
+                        }
+                    }
+                }
+                
+                // 折叠新建分组表单
+                if (newGroupExpanded) {
+                    domElements.newGroupContent.classList.remove('expanded');
+                    domElements.newGroupToggle.innerHTML = '<i class="fas fa-plus"></i>';
+                    newGroupExpanded = false;
+                }
+                
+                // 展开新分组
+                content.classList.add('expanded');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                expandedGroup = groupName;
+            }
+        }
+
+        // 渲染分组下拉菜单
+        function renderGroupDropdown() {
+            domElements.groupDropdown.innerHTML = '';
+            
+            Object.keys(searchGroups).forEach(groupName => {
+                const groupItem = document.createElement('div');
+                groupItem.className = 'group-item';
+                if (groupName === currentGroup) groupItem.classList.add('active');
+                
+                groupItem.innerHTML = `
+                    <div class="group-color" style="background-color: ${searchGroups[groupName].color}"></div>
+                    <span>${groupName}</span>
+                `;
+                
+                groupItem.addEventListener('click', () => {
+                    switchGroup(groupName);
+                    domElements.groupDropdown.classList.remove('show');
+                });
+                
+                domElements.groupDropdown.appendChild(groupItem);
+            });
+        }
+
+        // 渲染分组列表
+        function renderGroupsList() {
+            domElements.groupsContainer.innerHTML = '';
+            
+            if (Object.keys(searchGroups).length === 0) {
+                domElements.groupsContainer.innerHTML = '<div class="empty-state">暂无分组，请添加新分组</div>';
+                return;
+            }
+            
+            Object.keys(searchGroups).forEach(groupName => {
+                const groupItem = document.createElement('div');
+                groupItem.className = 'group-list-item';
+                
+                groupItem.innerHTML = `
+                    <div class="group-list-header" data-group="${groupName}">
+                        <div class="group-list-title">
+                            <div class="group-list-color" style="background-color: ${searchGroups[groupName].color}"></div>
+                            <span>${groupName}</span>
+                            <span class="group-list-engines">(${searchGroups[groupName].engines.length}个引擎)</span>
+                        </div>
+                        <div class="group-list-actions">
+                            <button class="group-list-action-btn" data-action="delete" data-group="${groupName}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="group-list-action-btn" id="groupToggle-${groupName}" data-action="toggle" data-group="${groupName}">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="group-list-content" id="groupContent-${groupName}">
+                        <div class="group-list-form">
+                            <div class="config-group">
+                                <label for="engineName-${groupName}">搜索引擎名称</label>
+                                <input type="text" id="engineName-${groupName}" class="config-input" placeholder="例如: 百度">
+                            </div>
+                            
+                            <div class="config-group">
+                                <label for="engineUrl-${groupName}">搜索URL</label>
+                                <input type="text" id="engineUrl-${groupName}" class="config-input" placeholder="例如: https://www.baidu.com/s?wd={keyword}">
+                            </div>
+                            
+                            <div class="config-group">
+                                <label for="engineIcon-${groupName}">图标类名 (Font Awesome)</label>
+                                <input type="text" id="engineIcon-${groupName}" class="config-input" placeholder="例如: fab fa-google">
+                            </div>
+                            
+                            <div class="config-group">
+                                <label for="engineColor-${groupName}">图标背景色</label>
+                                <input type="color" id="engineColor-${groupName}" class="config-input" value="#6e45e2">
+                            </div>
+                            
+                            <div class="config-actions">
+                                <button class="config-btn btn-secondary" data-action="reset" data-group="${groupName}">重置</button>
+                                <button class="config-btn btn-primary" data-action="addEngine" data-group="${groupName}">添加搜索引擎</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加事件委托
+                const groupHeader = groupItem.querySelector('.group-list-header');
+                groupHeader.addEventListener('click', (e) => {
+                    if (!e.target.closest('.group-list-action-btn')) {
+                        toggleGroup(groupName);
+                    }
+                });
+                
+                // 添加按钮事件
+                const deleteBtn = groupItem.querySelector('[data-action="delete"]');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteGroup(groupName);
+                });
+                
+                const toggleBtn = groupItem.querySelector('[data-action="toggle"]');
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleGroup(groupName);
+                });
+                
+                const resetBtn = groupItem.querySelector('[data-action="reset"]');
+                resetBtn.addEventListener('click', () => resetEngineForm(groupName));
+                
+                const addEngineBtn = groupItem.querySelector('[data-action="addEngine"]');
+                addEngineBtn.addEventListener('click', () => addNewEngine(groupName));
+                
+                // 添加鼠标事件，实现与配置面板相同的展开/关闭逻辑
+                const groupContent = groupItem.querySelector(`#groupContent-${groupName}`);
+                groupContent.addEventListener('mouseleave', function() {
+                    if (expandedGroup === groupName) {
+                        groupTimeouts[groupName] = setTimeout(() => {
+                            toggleGroup(groupName);
+                        }, 300);
+                    }
+                });
+                
+                groupContent.addEventListener('mouseenter', function() {
+                    if (groupTimeouts[groupName]) {
+                        clearTimeout(groupTimeouts[groupName]);
+                    }
+                });
+                
+                domElements.groupsContainer.appendChild(groupItem);
+            });
+        }
+
+        // 切换到指定分组
+        function switchGroup(groupName) {
+            if (!groupName || !searchGroups[groupName]) return;
+            
+            currentGroup = groupName;
+            domElements.currentGroupHint.textContent = groupName;
+            renderGroupDropdown();
+            renderEngines();
+        }
+
+        // 渲染搜索引擎图标
+        function renderEngines() {
+            domElements.enginesContainer.innerHTML = '';
+            
+            if (!currentGroup || !searchGroups[currentGroup]) return;
+            
+            if (searchGroups[currentGroup].engines.length === 0) {
+                domElements.enginesContainer.innerHTML = '<div class="empty-state">此分组暂无搜索引擎，请添加</div>';
+                return;
+            }
+            
+            searchGroups[currentGroup].engines.forEach((engine, index) => {
+                const engineEl = document.createElement('div');
+                engineEl.className = 'engine';
+                engineEl.innerHTML = `
+                    <div class="engine-icon" style="background-color: ${engine.color}">
+                        <i class="${engine.icon}"></i>
+                    </div>
+                    <div class="engine-name">${engine.name}</div>
+                `;
+                
+                engineEl.addEventListener('click', () => searchSingleEngine(engine.url));
+                
+                // 长按删除功能
+                let pressTimer;
+                const handlePressStart = () => {
+                    pressTimer = setTimeout(() => {
+                        if (confirm(`确定要从"${currentGroup}"分组中删除"${engine.name}"吗？`)) {
+                            removeEngine(index);
+                        }
+                    }, LONG_PRESS_DURATION);
+                };
+                
+                const handlePressEnd = () => clearTimeout(pressTimer);
+                
+                engineEl.addEventListener('mousedown', handlePressStart);
+                engineEl.addEventListener('mouseup', handlePressEnd);
+                engineEl.addEventListener('touchstart', handlePressStart);
+                engineEl.addEventListener('touchend', handlePressEnd);
+                
+                domElements.enginesContainer.appendChild(engineEl);
+            });
+        }
+
+        // 从本地存储加载配置
+        function loadFromLocalStorage() {
+            try {
+                const savedGroups = localStorage.getItem('searchGroups');
+                if (savedGroups) {
+                    const parsed = JSON.parse(savedGroups);
+                    // 验证数据格式
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        searchGroups = parsed;
+                        renderGroupDropdown();
+                        
+                        if (currentGroup && searchGroups[currentGroup]) {
+                            switchGroup(currentGroup);
+                        } else if (Object.keys(searchGroups).length > 0) {
+                            switchGroup(Object.keys(searchGroups)[0]);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('加载本地存储失败:', e);
+            }
+        }
+
+        // 保存配置到本地存储
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('searchGroups', JSON.stringify(searchGroups));
+            } catch (e) {
+                console.error('保存到本地存储失败:', e);
+                alert('保存配置失败，可能是存储空间不足');
+            }
+        }
+
+        // 多引擎搜索
+        function multiSearch() {
+            const keyword = domElements.searchKeyword.value.trim();
+            
+            if (!keyword) {
+                alert('请输入关键词！');
+                return;
+            }
+            
+            if (!currentGroup || !searchGroups[currentGroup]) {
+                alert('请先选择一个搜索分组！');
+                return;
+            }
+            
+            // 显示加载状态
+            const originalHtml = domElements.searchButton.innerHTML;
+            domElements.searchButton.innerHTML = '<div class="loading"></div>';
+            domElements.searchButton.disabled = true;
+            
+            // 使用setTimeout让UI有机会更新
+            setTimeout(() => {
+                try {
+                    searchGroups[currentGroup].engines.forEach(engine => {
+                        const url = engine.url.replace('{keyword}', encodeURIComponent(keyword));
+                        window.open(url, '_blank');
+                    });
+                } catch (e) {
+                    console.error('搜索出错:', e);
+                    alert('搜索时出现错误，请检查弹出窗口是否被阻止');
+                } finally {
+                    // 恢复按钮状态
+                    domElements.searchButton.innerHTML = originalHtml;
+                    domElements.searchButton.disabled = false;
+                }
+            }, 100);
+        }
+
+        // 单引擎搜索
+        function searchSingleEngine(baseUrl) {
+            const keyword = domElements.searchKeyword.value.trim();
+            
+            if (!keyword) {
+                alert('请输入关键词！');
+                return;
+            }
+            
+            const url = baseUrl.replace('{keyword}', encodeURIComponent(keyword));
+            window.open(url, '_blank');
+        }
+
+        // 添加新搜索引擎
+        function addNewEngine(groupName) {
+            const name = document.getElementById(`engineName-${groupName}`).value.trim();
+            const url = document.getElementById(`engineUrl-${groupName}`).value.trim();
+            const icon = document.getElementById(`engineIcon-${groupName}`).value.trim();
+            const color = document.getElementById(`engineColor-${groupName}`).value;
+            
+            if (!name || !url || !icon) {
+                alert('请填写所有必填字段！');
+                return;
+            }
+            
+            if (!url.includes('{keyword}')) {
+                alert('URL中必须包含 {keyword} 占位符！');
+                return;
+            }
+            
+            if (!searchGroups[groupName]) {
+                searchGroups[groupName] = { color: "#6e45e2", engines: [] };
+            }
+            
+            searchGroups[groupName].engines.push({ name, url, icon, color });
+            saveToLocalStorage();
+            
+            if (currentGroup === groupName) renderEngines();
+            
+            resetEngineForm(groupName);
+            alert(`"${name}" 已成功添加到"${groupName}"分组！`);
+        }
+
+        // 添加新分组
+        function addNewGroup() {
+            const name = domElements.newGroupName.value.trim();
+            const color = domElements.groupColor.value;
+            
+            if (!name) {
+                alert('请输入分组名称！');
+                return;
+            }
+            
+            if (searchGroups[name]) {
+                alert('分组已存在！');
+                return;
+            }
+            
+            searchGroups[name] = { color: color, engines: [] };
+            saveToLocalStorage();
+            renderGroupDropdown();
+            renderGroupsList();
+            resetGroupConfig();
+            switchGroup(name); // 自动切换到新分组
+            
+            alert(`"${name}" 分组已成功创建！`);
+        }
+
+        // 删除分组
+        function deleteGroup(groupName) {
+            if (confirm(`确定要删除"${groupName}"分组吗？此操作无法撤销。`)) {
+                delete searchGroups[groupName];
+                saveToLocalStorage();
+                
+                if (currentGroup === groupName) {
+                    const firstGroup = Object.keys(searchGroups)[0] || "";
+                    switchGroup(firstGroup);
+                }
+                
+                renderGroupDropdown();
+                renderGroupsList();
+            }
+        }
+
+        // 移除搜索引擎
+        function removeEngine(index) {
+            searchGroups[currentGroup].engines.splice(index, 1);
+            saveToLocalStorage();
+            renderEngines();
+        }
+
+        // 重置引擎表单
+        function resetEngineForm(groupName) {
+            document.getElementById(`engineName-${groupName}`).value = '';
+            document.getElementById(`engineUrl-${groupName}`).value = '';
+            document.getElementById(`engineIcon-${groupName}`).value = '';
+            document.getElementById(`engineColor-${groupName}`).value = '#6e45e2';
+        }
+
+        // 重置分组配置表单
+        function resetGroupConfig() {
+            domElements.newGroupName.value = '';
+            domElements.groupColor.value = '#6e45e2';
+        }
+
+        // 初始化当页面加载
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
