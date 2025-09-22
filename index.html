@@ -101,6 +101,7 @@
             align-items: center;
             margin-right: 12px;
             position: relative;
+            min-width: 52px;
         }
         
         .group-toggle {
@@ -233,6 +234,7 @@
         .search-box {
             display: flex;
             flex: 1;
+            min-width: 0;
         }
         
         .search-input {
@@ -245,6 +247,7 @@
             color: #1d1d1f;
             border-radius: 14px;
             transition: all 0.3s ease;
+            min-width: 0;
         }
         
         .search-input:focus {
@@ -278,6 +281,7 @@
             box-shadow: 0 4px 12px rgba(110, 69, 226, 0.3);
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
         }
         
         .search-button::before {
@@ -669,7 +673,7 @@
         }
         
         .group-list-content.expanded, .new-group-content.expanded {
-            max-height: 500px;
+            max-height: 800px; /* 增加最大高度以适应更多内容 */
         }
         
         .group-list-form, .new-group-form-content {
@@ -709,6 +713,71 @@
             color: #86868b;
         }
         
+        /* 图标预览样式 - 修复布局 */
+        .icon-preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .icon-preview {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .icon-preview-text {
+            margin-right: 10px;
+            color: #86868b;
+            white-space: nowrap;
+        }
+        
+        .icon-preview-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #6e45e2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-right: 10px;
+        }
+        
+        .icon-help {
+            font-size: 0.8rem;
+            color: #86868b;
+            white-space: nowrap;
+        }
+        
+        .icon-help a {
+            color: #6e45e2;
+            text-decoration: none;
+        }
+        
+        .icon-help a:hover {
+            text-decoration: underline;
+        }
+        
+        .icon-error {
+            color: #e2456e;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+            width: 100%;
+        }
+        
+        /* 修复移动端布局问题 */
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 2rem;
@@ -726,31 +795,36 @@
             
             .group-toggle {
                 width: 48px;
+                height: 48px;
             }
             
             .group-dropdown {
                 width: 200px;
+                left: 0;
+                right: auto;
             }
             
             .search-box-container {
                 flex-direction: column;
+                align-items: stretch;
             }
             
             .group-selector {
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 15px;
+                justify-content: center;
             }
             
             .group-toggle {
                 width: 100%;
                 padding: 10px;
-                justify-content: flex-start;
+                justify-content: center;
                 border-radius: 14px;
             }
             
             .group-toggle i {
-                margin-right: 10px;
+                margin-right: 0;
             }
             
             .search-box {
@@ -758,12 +832,14 @@
             }
             
             .search-input {
-                border-radius: 14px;
+                border-radius: 14px 0 0 14px;
+                margin-left: 0;
             }
             
             .search-button {
-                border-radius: 14px;
+                border-radius: 0 14px 14px 0;
                 width: 50px;
+                margin-left: 0;
             }
             
             .engine {
@@ -782,6 +858,42 @@
             
             .config-btn {
                 width: 100%;
+            }
+            
+            .config-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .toggle-config {
+                align-self: stretch;
+                text-align: center;
+            }
+            
+            .icon-preview-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .icon-preview {
+                width: 100%;
+            }
+        }
+
+        /* 修复小屏幕上的布局问题 */
+        @media (max-width: 400px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .engines-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .group-dropdown {
+                width: 100%;
+                left: 0;
             }
         }
     </style>
@@ -1128,6 +1240,16 @@
                             <div class="config-group">
                                 <label for="engineIcon-${groupName}">图标类名 (Font Awesome)</label>
                                 <input type="text" id="engineIcon-${groupName}" class="config-input" placeholder="例如: fab fa-google">
+                                <div class="icon-preview-container">
+                                    <div class="icon-preview" id="iconPreview-${groupName}">
+                                        <span class="icon-preview-text">预览:</span>
+                                        <div class="icon-preview-icon">
+                                            <i id="previewIcon-${groupName}"></i>
+                                        </div>
+                                    </div>
+                                    <div class="icon-help">查看 <a href="https://fontawesome.com/icons" target="_blank">Font Awesome 图标库</a> 获取正确的图标类名</div>
+                                </div>
+                                <div class="icon-error" id="iconError-${groupName}">图标类名无效，请检查拼写或前缀（如 fas、fab、far）</div>
                             </div>
                             
                             <div class="config-group">
@@ -1170,8 +1292,49 @@
                 const addEngineBtn = groupItem.querySelector('[data-action="addEngine"]');
                 addEngineBtn.addEventListener('click', () => addNewEngine(groupName));
                 
+                // 添加图标预览功能
+                const iconInput = groupItem.querySelector(`#engineIcon-${groupName}`);
+                iconInput.addEventListener('input', () => updateIconPreview(groupName));
+                
                 domElements.groupsContainer.appendChild(groupItem);
             });
+        }
+
+        // 更新图标预览
+        function updateIconPreview(groupName) {
+            const iconInput = document.getElementById(`engineIcon-${groupName}`);
+            const previewIcon = document.getElementById(`previewIcon-${groupName}`);
+            const iconError = document.getElementById(`iconError-${groupName}`);
+            
+            const iconClass = iconInput.value.trim();
+            
+            if (iconClass) {
+                // 测试图标是否有效
+                const testElement = document.createElement('i');
+                testElement.className = iconClass;
+                
+                // 添加图标到DOM进行测试
+                document.body.appendChild(testElement);
+                
+                // 检查图标的字体是否加载
+                const computedStyle = window.getComputedStyle(testElement, '::before');
+                const content = computedStyle.content;
+                
+                // 清理测试元素
+                document.body.removeChild(testElement);
+                
+                // 如果content不是"none"，说明图标有效
+                if (content && content !== 'none' && content !== 'normal') {
+                    previewIcon.className = iconClass;
+                    iconError.style.display = 'none';
+                } else {
+                    previewIcon.className = '';
+                    iconError.style.display = 'block';
+                }
+            } else {
+                previewIcon.className = '';
+                iconError.style.display = 'none';
+            }
         }
 
         // 切换到指定分组
@@ -1328,6 +1491,19 @@
                 return;
             }
             
+            // 验证图标是否有效
+            const testElement = document.createElement('i');
+            testElement.className = icon;
+            document.body.appendChild(testElement);
+            const computedStyle = window.getComputedStyle(testElement, '::before');
+            const content = computedStyle.content;
+            document.body.removeChild(testElement);
+            
+            if (!content || content === 'none' || content === 'normal') {
+                alert('图标类名无效，请检查拼写或前缀（如 fas、fab、far）');
+                return;
+            }
+            
             if (!searchGroups[groupName]) {
                 searchGroups[groupName] = { color: "#6e45e2", engines: [] };
             }
@@ -1395,6 +1571,12 @@
             document.getElementById(`engineUrl-${groupName}`).value = '';
             document.getElementById(`engineIcon-${groupName}`).value = '';
             document.getElementById(`engineColor-${groupName}`).value = '#6e45e2';
+            
+            // 重置预览
+            const previewIcon = document.getElementById(`previewIcon-${groupName}`);
+            const iconError = document.getElementById(`iconError-${groupName}`);
+            if (previewIcon) previewIcon.className = '';
+            if (iconError) iconError.style.display = 'none';
         }
 
         // 重置分组配置表单
@@ -1408,3 +1590,4 @@
     </script>
 </body>
 </html>
+
