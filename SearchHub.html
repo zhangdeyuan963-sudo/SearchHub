@@ -11,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
         }
         
         body {
@@ -1027,79 +1028,355 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
         }
         
-        /* 移动端适配 */
+        /* 移动端适配 - 增强版 */
         @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                justify-content: flex-start;
+                min-height: 100vh;
+            }
+            
             .container {
-                padding: 25px;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                margin-bottom: 25px;
             }
             
             .header h1 {
                 font-size: 2.2rem;
             }
             
+            .header p {
+                font-size: 1rem;
+            }
+            
             .search-box-container {
                 flex-direction: column;
+                padding: 12px;
+                border-radius: 18px;
             }
             
             .group-selector {
                 width: 100%;
                 margin-right: 0;
-                margin-bottom: 15px;
+                margin-bottom: 12px;
             }
             
             .group-toggle {
                 width: 100%;
-                padding: 12px;
+                height: 50px;
+                border-radius: 14px;
+                font-size: 1.4rem;
+            }
+            
+            .current-group {
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%) translateY(-8px);
+                font-size: 0.9rem;
+                padding: 10px 14px;
+            }
+            
+            .group-toggle:hover + .current-group {
+                transform: translateX(-50%) translateY(0);
+            }
+            
+            .group-dropdown {
+                width: 100%;
+                left: 0;
+                right: 0;
+                top: calc(100% + 10px);
+                border-radius: 16px;
             }
             
             .search-box {
                 width: 100%;
+                flex-direction: column;
+            }
+            
+            .search-input {
+                padding: 16px;
+                font-size: 16px; /* 防止iOS缩放 */
+                border-radius: 14px;
+                margin-bottom: 10px;
+            }
+            
+            .search-button {
+                width: 100%;
+                margin-left: 0;
+                padding: 16px;
+                font-size: 1.3rem;
+                border-radius: 14px;
             }
             
             .engines-container {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
+                margin-top: 25px;
+            }
+            
+            .engine {
+                padding: 20px 15px;
+                border-radius: 18px;
+            }
+            
+            .engine-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+                font-size: 1.8rem;
+                margin-bottom: 15px;
+            }
+            
+            .engine-name {
+                font-size: 1rem;
+            }
+            
+            .config-panel {
+                margin-top: 30px;
+                padding: 20px;
+                border-radius: 18px;
             }
             
             .config-header {
                 flex-direction: column;
                 gap: 15px;
                 align-items: flex-start;
+                margin-bottom: 20px;
+            }
+            
+            .config-header h3 {
+                font-size: 1.3rem;
             }
             
             .toggle-config {
                 width: 100%;
                 justify-content: center;
+                padding: 14px;
+                font-size: 1rem;
+            }
+            
+            .config-content.show {
+                margin-top: 15px;
+            }
+            
+            .config-group {
+                margin-bottom: 20px;
+            }
+            
+            .config-group label {
+                font-size: 1rem;
+                margin-bottom: 8px;
+            }
+            
+            .config-input {
+                padding: 14px 16px;
+                font-size: 16px; /* 防止iOS缩放 */
+                border-radius: 14px;
             }
             
             .config-actions {
                 flex-direction: column;
+                gap: 10px;
             }
             
             .config-btn {
                 width: 100%;
+                padding: 16px;
+                font-size: 1rem;
+                border-radius: 14px;
             }
             
             .preset-backgrounds {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .preset-bg {
+                height: 70px;
+            }
+            
+            .group-list-header, .new-group-header, .ui-customization-header {
+                padding: 16px;
+            }
+            
+            .group-list-title, .new-group-title, .ui-customization-title {
+                font-size: 1rem;
+            }
+            
+            .group-list-engines {
+                font-size: 0.9rem;
+            }
+            
+            .group-list-form, .new-group-form-content, .ui-customization-form-content {
+                padding: 16px;
+            }
+            
+            .icon-preview-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .icon-preview {
+                min-width: 100%;
+            }
+            
+            .footer {
+                margin-top: 25px;
+                font-size: 0.9rem;
+            }
+            
+            /* 移动端触摸优化 */
+            .engine, .group-item, .group-list-header, .new-group-header, .ui-customization-header {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            
+            input, textarea {
+                -webkit-touch-callout: default;
+                -webkit-user-select: text;
+                user-select: text;
             }
         }
         
         @media (max-width: 480px) {
-            .engines-container {
-                grid-template-columns: 1fr;
+            .container {
+                padding: 15px;
             }
             
             .header h1 {
                 font-size: 1.8rem;
             }
             
-            .header p {
-                font-size: 1rem;
+            .engines-container {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .engine {
+                padding: 18px 12px;
+            }
+            
+            .engine-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.6rem;
             }
             
             .preset-backgrounds {
                 grid-template-columns: 1fr;
+            }
+            
+            .group-dropdown {
+                max-height: 250px;
+            }
+            
+            .group-item {
+                padding: 14px 16px;
+            }
+        }
+        
+        /* 移动端底部安全区域适配 */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(15px, env(safe-area-inset-left));
+                padding-right: max(15px, env(safe-area-inset-right));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* 搜索结果页面样式 */
+        .search-results-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .search-results-modal.show {
+            display: flex;
+        }
+        
+        .search-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .search-results-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .close-results {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .search-results-list {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .search-result-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .search-result-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .search-result-link {
+            display: block;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .search-result-engine {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .search-results-modal {
+                padding: 15px;
+            }
+            
+            .search-results-title {
+                font-size: 1.1rem;
+            }
+            
+            .search-result-item {
+                padding: 12px;
             }
         }
     </style>
@@ -1243,6 +1520,19 @@
             <p>© 2025 SearchHub | 使用 {keyword} 作为关键词占位符 | 簡單制作</p>
         </div>
     </div>
+    
+    <!-- 搜索结果模态框（移动端专用） -->
+    <div class="search-results-modal" id="searchResultsModal">
+        <div class="search-results-header">
+            <div class="search-results-title">搜索结果</div>
+            <button class="close-results" id="closeResults">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="search-results-list" id="searchResultsList">
+            <!-- 搜索结果将通过JavaScript动态生成 -->
+        </div>
+    </div>
 
     <script>
         // 搜索引擎配置数据
@@ -1287,7 +1577,7 @@
             blurIntensity: 20
         };
 
-        // 预设背景 - 移除了"星空"和"山脉"
+        // 预设背景
         const presetBackgrounds = [
             {
                 name: "紫色渐变",
@@ -1342,7 +1632,10 @@
             blurIntensity: document.getElementById('blurIntensity'),
             blurValue: document.getElementById('blurValue'),
             resetUIConfigBtn: document.getElementById('resetUIConfigBtn'),
-            applyUIConfigBtn: document.getElementById('applyUIConfigBtn')
+            applyUIConfigBtn: document.getElementById('applyUIConfigBtn'),
+            searchResultsModal: document.getElementById('searchResultsModal'),
+            searchResultsList: document.getElementById('searchResultsList'),
+            closeResults: document.getElementById('closeResults')
         };
 
         let currentGroup = "通用搜索";
@@ -1351,6 +1644,7 @@
         let newGroupExpanded = false;
         let uiCustomizationExpanded = false;
         const LONG_PRESS_DURATION = 1000; // 长按时间阈值
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         // 初始化函数
         function init() {
@@ -1413,6 +1707,9 @@
             domElements.applyUIConfigBtn.addEventListener('click', applyUIConfig);
             domElements.customBackground.addEventListener('change', handleCustomBackgroundUpload);
             
+            // 搜索结果模态框事件
+            domElements.closeResults.addEventListener('click', closeSearchResults);
+            
             // 鼠标离开事件
             domElements.groupDropdown.addEventListener('mouseleave', function() {
                 dropdownTimeout = setTimeout(() => this.classList.remove('show'), 300);
@@ -1432,6 +1729,12 @@
                     domElements.configContent.classList.remove('show');
                 }
             });
+            
+            // 移动端触摸优化：防止长按时出现文本选择
+            if (isMobile) {
+                document.addEventListener('touchstart', function() {}, {passive: true});
+                document.addEventListener('touchend', function() {}, {passive: true});
+            }
         }
 
         // 切换分组下拉菜单
@@ -1878,7 +2181,7 @@
                     <div class="engine-name">${engine.name}</div>
                 `;
                 
-                engineEl.addEventListener('click', () => searchSingleEngine(engine.url));
+                engineEl.addEventListener('click', () => searchSingleEngine(engine.url, engine.name));
                 
                 // 长按删除功能
                 let pressTimer;
@@ -1965,7 +2268,7 @@
             }
         }
 
-        // 多引擎搜索
+        // 多引擎搜索 - 修复移动端多标签页问题
         function multiSearch() {
             const keyword = domElements.searchKeyword.value.trim();
             
@@ -1987,10 +2290,15 @@
             // 使用setTimeout让UI有机会更新
             setTimeout(() => {
                 try {
-                    searchGroups[currentGroup].engines.forEach(engine => {
-                        const url = engine.url.replace('{keyword}', encodeURIComponent(keyword));
-                        window.open(url, '_blank');
-                    });
+                    const engines = searchGroups[currentGroup].engines;
+                    
+                    if (isMobile) {
+                        // 移动端：显示搜索结果列表而不是直接打开多个标签页
+                        showSearchResultsModal(keyword, engines);
+                    } else {
+                        // 桌面端：直接打开多个标签页
+                        openMultipleTabs(keyword, engines);
+                    }
                 } catch (e) {
                     console.error('搜索出错:', e);
                     alert('搜索时出现错误，请检查弹出窗口是否被阻止');
@@ -2002,8 +2310,56 @@
             }, 100);
         }
 
+        // 在移动端显示搜索结果列表
+        function showSearchResultsModal(keyword, engines) {
+            // 清空之前的搜索结果
+            domElements.searchResultsList.innerHTML = '';
+            
+            // 添加搜索结果项
+            engines.forEach(engine => {
+                const url = engine.url.replace('{keyword}', encodeURIComponent(keyword));
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.innerHTML = `
+                    <a href="${url}" target="_blank" class="search-result-link">
+                        <i class="${engine.icon}" style="margin-right: 8px;"></i>
+                        ${engine.name} 搜索
+                    </a>
+                    <div class="search-result-engine">${url}</div>
+                `;
+                domElements.searchResultsList.appendChild(resultItem);
+            });
+            
+            // 显示模态框
+            domElements.searchResultsModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭搜索结果模态框
+        function closeSearchResults() {
+            domElements.searchResultsModal.classList.remove('show');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+
+        // 在桌面端打开多个标签页
+        function openMultipleTabs(keyword, engines) {
+            // 第一个标签页立即打开
+            const firstEngine = engines[0];
+            const firstUrl = firstEngine.url.replace('{keyword}', encodeURIComponent(keyword));
+            window.open(firstUrl, '_blank');
+            
+            // 其他标签页使用setTimeout延迟打开，避免被浏览器阻止
+            for (let i = 1; i < engines.length; i++) {
+                setTimeout(() => {
+                    const engine = engines[i];
+                    const url = engine.url.replace('{keyword}', encodeURIComponent(keyword));
+                    window.open(url, '_blank');
+                }, i * 100); // 每个标签页间隔100毫秒
+            }
+        }
+
         // 单引擎搜索
-        function searchSingleEngine(baseUrl) {
+        function searchSingleEngine(baseUrl, engineName) {
             const keyword = domElements.searchKeyword.value.trim();
             
             if (!keyword) {
@@ -2012,7 +2368,14 @@
             }
             
             const url = baseUrl.replace('{keyword}', encodeURIComponent(keyword));
-            window.open(url, '_blank');
+            
+            if (isMobile) {
+                // 移动端直接在当前窗口打开
+                window.open(url, '_blank');
+            } else {
+                // 桌面端在新标签页打开
+                window.open(url, '_blank');
+            }
         }
 
         // 添加新搜索引擎
